@@ -1,7 +1,7 @@
 package ru.netology.coroutines.dto
 
 data class PostWithAuthors(
-    val post: Post,
-    val author: List<Author>,
+    val post:Post,
+    val author: Author,
     val id: Long,
     )
