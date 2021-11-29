@@ -8,5 +8,6 @@ data class Comment(
     val published: Long,
     val likedByMe: Boolean,
     val likes: Int = 0,
-)
+
+    )
 

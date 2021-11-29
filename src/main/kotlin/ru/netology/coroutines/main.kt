@@ -29,21 +29,24 @@ fun main() {
         launch {
             try {
                 val posts = getPosts(client)
-                    .map { post -> async {
-                        PostWithComments(post, getComments(client, post.id))
-                        PostWithAuthors(post, getAuthors(client, post.authorId), post.id)
-                    }
+                    .map { post ->
+                        async {
+                            PostWithComments(post, getComments(client, post.id))
+                            PostWithAuthors(post, getAuthors(client, post.authorId), post.id, post.authorId)
+                        }
                     }.awaitAll()
 
-                val comments = posts.map{post ->
+                val comments = posts.map { post ->
                     async {
-                        getComments(client, post.id)
-                            .map { comment -> async {
-                                CommentsWithAuthors(post.author, getComments(client,comment.authorId))
+                        getComments(client, post.id,)
+                            .map { comment ->
+                                async {
+                                    CommentsWithAuthors(post.author, getComments(client, comment.id))
+                                }
+                            }
+                        PostWithAuthorsAndComments(post.post, getAuthors(client, post.authorId), post.authorId, post.author,)
                             }
                             }.awaitAll()
-                    }
-                }.awaitAll()
 
                 println(posts)
                 println(comments)
@@ -54,6 +57,10 @@ fun main() {
     }
     Thread.sleep(30_000L)
 }
+
+
+
+
 suspend fun OkHttpClient.apiCall(url: String): Response {
     return suspendCoroutine { continuation ->
         Request.Builder()
@@ -93,6 +100,22 @@ suspend fun getComments(client: OkHttpClient,id: Long): List<Comment> =
 
 suspend fun getAuthors(client: OkHttpClient, id: Long): Author =
     makeRequest("$BASE_URL/api/slow/authors/$id", client, object : TypeToken<Author>() {})
+
+
+
+
+//                val comments = posts.map{post ->
+//                    async {
+//
+//                        getComments(client, post.id)
+//                            .map { comment -> async {
+//                                CommentsWithAuthors(post.author, getComments(client,comment.authorId))
+//                            }
+//                            }.awaitAll()
+//                    }
+//                }.awaitAll()
+
+
 
 
 
